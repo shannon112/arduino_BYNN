@@ -1,6 +1,10 @@
 /*
    BYNN 吹得你不要不要的(Blow You No No)
    This is BYNN main function
+   現場：
+   需調顏色上下限！
+   需條轉彎角度！
+   需條前進速度！
 */
 #include <TimerOne.h>
 #include <Servo.h>
