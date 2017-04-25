@@ -1,13 +1,15 @@
 /*
+   >>>>This is BYNN main function<<<<
+   機械工程實務_氣動車專題_全自動控制系統（循跡/顏色辨識）
    BYNN 吹得你不要不要的(Blow You No No)
-   This is BYNN main function
-   現場：
+   現場調整：
    需調顏色上下限！
-   需條轉彎角度！
-   需條前進速度！
+   需調轉彎角度！
+   需調前進速度！
 */
 #include <TimerOne.h>
 #include <Servo.h>
+
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
 ///////////////////////////////////////////
@@ -15,7 +17,7 @@ const int sensorLL = 6;     //新的，一變黑就會有值
 const int sensorL = 5;      //左感測器輸入腳，舊的要對到膠帶正中間才有
 const int sensorM = 4;   //中感測器輸入腳
 const int sensorR = 3;     //右感測器輸入腳
-const int sensorRR = 14;     //新的，一變黑就會有值
+const int sensorRR = A1;     //新的，一變黑就會有值
 const int BrushlessFPin = 9;
 const int BrushlessBPin = 10;
 const int myServoPin = 11;
@@ -34,6 +36,8 @@ Servo BrushlessB;
 Servo myServo;
 //**********State********************
 boolean missionState = 0;
+int IntIRState = 0;
+String IRState = "";
 //**********Speed********************
 int FnormalSpeed = 30;
 int FlowSpeed = 21;
@@ -54,6 +58,8 @@ float g_SF[3];        // 儲存白平衡計算後之 RGB 補償係數
 boolean colorState = 0;
 int colorGapDown = 110;
 int colorGapUp = 125;
+
+
 ///////////////////////////////////////////////////////////////
 ////////// Set up/////////////////
 ///////////////////////////////////////////
@@ -64,7 +70,7 @@ void setup() {
   pinMode(sensorL, INPUT); //定義左感測器
   pinMode(sensorM, INPUT);//定義中感測器
   pinMode(sensorR, INPUT); //定義右感測器
-  pinMode(sensorRR, INPUT); //定義最右感測器
+  //pinMode(sensorRR, INPUT); //定義最右感測器//類比輸入
   //**********Motor********************
   BrushlessF.attach(BrushlessFPin);
   BrushlessB.attach(BrushlessBPin);
@@ -79,9 +85,9 @@ void setup() {
   pinMode(OUT, INPUT);
   digitalWrite(S0, LOW);  // OUTPUT FREQUENCY SCALING 2%
   digitalWrite(S1, HIGH);
-  Timer1.initialize();             // defaulte is 1s
-  Timer1.attachInterrupt(TSC_Callback);
-  attachInterrupt(0, TSC_Count, RISING);
+  //  Timer1.initialize();             // defaulte is 1s
+  //  Timer1.attachInterrupt(TSC_Callback);
+  //  attachInterrupt(0, TSC_Count, RISING);
   delay(2000);
 }
 
@@ -90,11 +96,14 @@ void setup() {
 ////////// Main function////////////////
 ///////////////////////////////////////////
 void loop() {
+  Serial.println("======================");
   //initialize() //use another program to initialize
   receiveIR();
   receiveColor();
   sortingAndAction();
   checkMission();
+  Serial.println(IRState);
+  Serial.println("======================");
 }
 
 
@@ -107,14 +116,21 @@ int stateL = 1;  //左感測器狀態
 int stateM = 1;  //中感測器狀態
 int stateR = 1;  //右感測器狀態
 int stateRR = 1;  //最右感測器狀態
-String IRState = "";
 //**********Function********************
 void receiveIR() { //0代表黑色 1代表淺色
-  stateLL = digitalRead(sensorLL);
+  if (digitalRead(sensorLL) == 1) {
+    stateLL = 0;
+  } else {
+    stateLL = 1;
+  };
   stateL = digitalRead(sensorL);
   stateM = digitalRead(sensorM);
   stateR = digitalRead(sensorR);
-  stateRR = digitalRead(sensorRR);
+  if (analogRead(sensorRR) > 500) {
+    stateRR = 0;
+  } else {
+    stateRR = 1;
+  };
   IRState = String(stateLL) + String(stateL) + String(stateM) + String(stateR) + String(stateRR);
 }
 
@@ -136,7 +152,8 @@ void receiveColor() {
 ///////////////////////////////////////////
 void sortingAndAction() {
   if (colorState == 0) {
-    switch (IRState.toInt()) {
+    IntIRState = IRState.toInt();
+    switch (IntIRState) {
       case 00000:
         Serial.println("all black, change to default.");
         directionControl(0);
@@ -243,8 +260,7 @@ void directionControl(int degree) { //左正右負
 //////////color////////////////
 ///////////////////////////////////////////
 // 選擇過濾顏色
-void TSC_FilterColor(int Level01, int Level02)
-{
+void TSC_FilterColor(int Level01, int Level02) {
   if (Level01 != 0)
     Level01 = HIGH;
 
@@ -255,13 +271,11 @@ void TSC_FilterColor(int Level01, int Level02)
   digitalWrite(S3, Level02);
 }
 
-void TSC_Count()
-{
+void TSC_Count() {
   g_count ++ ;
 }
 
-void TSC_Callback()
-{
+void TSC_Callback() {
   switch (g_flag)
   {
     case 0:
