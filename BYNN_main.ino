@@ -7,25 +7,25 @@
    需調轉彎角度！
    需調前進速度！
 */
-#include <TimerOne.h>
 #include <Servo.h>
 
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
 ///////////////////////////////////////////
-const int sensorLL = 6;     //新的，一變黑就會有值
-const int sensorL = 5;      //左感測器輸入腳，舊的要對到膠帶正中間才有
-const int sensorM = 4;   //中感測器輸入腳
-const int sensorR = 3;     //右感測器輸入腳
-const int sensorRR = A1;     //新的，一變黑就會有值
-const int BrushlessFPin = 9;
-const int BrushlessBPin = 10;
-const int myServoPin = 11;
-const int S0 = 7;
-const int S1 = 8;
-const int S2 = 12;
-const int S3 = 13;
-const int OUT = 2;
+const int sensorLL = 18;     //新的，一變黑就會有值
+const int sensorL = 17;      //左感測器輸入腳，舊的要對到膠帶正中間才有
+const int sensorM = 16;   //中感測器輸入腳
+const int sensorR = 15;     //右感測器輸入腳
+const int sensorRR = 14;     //新的，一變黑就會有值
+const int BrushlessFPin = 3;
+const int BrushlessBPin = 4;
+const int myServoPin = 5;
+int S0 = 8;//pinB
+int S1 = 9;//pinA
+int S2 = 12;//pinE
+int S3 = 11;//pinF
+int taosOutPin = 10;//pinC
+int LED = 13;//pinD
 
 ///////////////////////////////////////////////////////////////
 ////////// variable/////////////////
@@ -51,13 +51,9 @@ int smallDegree = 10;
 int verysmallDegree = 5;
 int middleDegree = 90;
 //**********color********************
-int   g_count = 0;    // 頻率計算
-int   g_array[3];     // 儲存 RGB 值
-int   g_flag = 0;     // RGB 過濾順序
-float g_SF[3];        // 儲存白平衡計算後之 RGB 補償係數
 boolean colorState = 0;
-int colorGapDown = 110;
-int colorGapUp = 125;
+int colorGapDown = 1100;
+int colorGapUp = 1205;
 
 
 ///////////////////////////////////////////////////////////////
@@ -77,18 +73,17 @@ void setup() {
   myServo.attach(myServoPin);
   directionControl(0);
   //**********color********************
-  // TCS3200 初始化與輸出頻率設定
-  pinMode(S0, OUTPUT);
-  pinMode(S1, OUTPUT);
-  pinMode(S2, OUTPUT);
-  pinMode(S3, OUTPUT);
-  pinMode(OUT, INPUT);
-  digitalWrite(S0, LOW);  // OUTPUT FREQUENCY SCALING 2%
-  digitalWrite(S1, HIGH);
-  //  Timer1.initialize();             // defaulte is 1s
-  //  Timer1.attachInterrupt(TSC_Callback);
-  //  attachInterrupt(0, TSC_Count, RISING);
-  delay(2000);
+  // TCS3200 初始化
+  //initialize pins
+  pinMode(LED, OUTPUT); //LED pinD
+  //color mode selection
+  pinMode(S2, OUTPUT); //S2 pinE
+  pinMode(S3, OUTPUT); //S3 pinF
+  //color response pin (only actual input from taos)
+  pinMode(taosOutPin, INPUT); //taosOutPin pinC
+  //communication freq (sensitivity) selection
+  pinMode(S0, OUTPUT); //S0 pinB
+  pinMode(S1, OUTPUT); //S1 pinA
 }
 
 
@@ -139,11 +134,13 @@ void receiveIR() { //0代表黑色 1代表淺色
 //////////receiveColor////////////////
 ///////////////////////////////////////////
 void receiveColor() {
-  g_flag = 0;
-  Serial.println(g_array[0]);
-  if ((g_array[0] > colorGapDown) && (g_array[0] < colorGapUp))
+  float white = colorRead(taosOutPin, 0, 1);
+  float red = colorRead(taosOutPin, 1, 1);
+  float blue = colorRead(taosOutPin, 2, 1);
+  float green = colorRead(taosOutPin, 3, 1);
+  Serial.println(green);
+  if ((green > colorGapDown) && (green < colorGapUp))
     colorState = 1;
-  delay(300);
 }
 
 
@@ -259,42 +256,90 @@ void directionControl(int degree) { //左正右負
 ///////////////////////////////////////////////////////////////
 //////////color////////////////
 ///////////////////////////////////////////
-// 選擇過濾顏色
-void TSC_FilterColor(int Level01, int Level02) {
-  if (Level01 != 0)
-    Level01 = HIGH;
+/*
+  Eecher's TCS3200 program
+  adapted from code found at reibot.org
 
-  if (Level02 != 0)
-    Level02 = HIGH;
+  This section will return the pulseIn reading of the selected color.
+  It will turn on the sensor at the start taosMode(1), and it will power off the sensor at the end taosMode(0)
+  color codes: 0=white, 1=red, 2=blue, 3=green
+  if LEDstate is 0, LED will be off. 1 and the LED will be on.
+  taosOutPin is the ouput pin of the TCS3200.
+*/
 
-  digitalWrite(S2, Level01);
-  digitalWrite(S3, Level02);
+float colorRead(int taosOutPin, int color, boolean LEDstate) {
+  //turn on sensor and use highest frequency/sensitivity setting
+  taosMode(1);
+
+  //setting for a delay to let the sensor sit for a moment before taking a reading.
+  int sensorDelay = 100;
+
+  //set the S2 and S3 pins to select the color to be sensed
+  if (color == 0) {//white
+    digitalWrite(S3, LOW); //S3
+    digitalWrite(S2, HIGH); //S2
+  } else if (color == 1) {//red
+    digitalWrite(S3, LOW); //S3
+    digitalWrite(S2, LOW); //S2
+  } else if (color == 2) { //blåck
+    digitalWrite(S3, HIGH); //S3
+    digitalWrite(S2, LOW); //S2
+  } else if (color == 3) {//green
+    digitalWrite(S3, HIGH); //S3
+    digitalWrite(S2, HIGH); //S2
+  }
+
+  // create a var where the pulse reading from sensor will go
+  float readPulse;
+
+  //  turn LEDs on or off, as directed by the LEDstate var (IKKE Frydenlund)
+  if (LEDstate == 0) {
+    digitalWrite(LED, LOW);
+  }
+  if (LEDstate == 1) {
+    digitalWrite(LED, HIGH);
+  }
+
+  // wait a bit for LEDs to actually turn on, as directed by sensorDelay var
+  delay(sensorDelay);
+
+  // now take a measurement from the sensor, timing a low pulse on the sensor's "out" pin
+  readPulse = pulseIn(taosOutPin, LOW, 80000);
+
+  //if the pulseIn times out, it returns 0 and that throws off numbers. just cap it at 80k if it happens
+  if (readPulse < .1) {
+    readPulse = 80000;
+  }
+
+  //turn off color sensor and LEDs to save power
+  taosMode(0);
+
+  // return the pulse value back to whatever called for it...
+  return readPulse;
+
 }
 
-void TSC_Count() {
-  g_count ++ ;
-}
+// Operation modes area, controlled by hi/lo settings on S0 and S1 pins.
+//setting mode to zero will put taos into low power mode. taosMode(0);
 
-void TSC_Callback() {
-  switch (g_flag)
-  {
-    case 0:
-      Serial.println("->WB Start");
-      TSC_WB(HIGH, HIGH);            // Green
-      break;
-    case 1:
-      g_array[0] = g_count;
-      break;
-    default:
-      g_count = 0;
-      break;
+void taosMode(int mode) {
+  if (mode == 0) {
+    //power OFF mode-  LED off and both channels "low"
+    digitalWrite(LED, LOW);
+    digitalWrite(S0, LOW); //S0
+    digitalWrite(S1, LOW); //S1
+  } else if (mode == 1) {
+    //this will put in 1:1, highest sensitivity
+    digitalWrite(S0, HIGH); //S0
+    digitalWrite(S1, HIGH); //S1
+  } else if (mode == 2) {
+    //this will put in 1:5
+    digitalWrite(S0, HIGH); //S0
+    digitalWrite(S1, LOW); //S1
+  } else if (mode == 3) {
+    //this will put in 1:50
+    digitalWrite(S0, LOW); //S0
+    digitalWrite(S1, HIGH); //S1
   }
 }
 
-// 白平衡
-void TSC_WB(int Level0, int Level1) {
-  g_count = 0;
-  g_flag ++;
-  TSC_FilterColor(Level0, Level1);
-  Timer1.setPeriod(50000);      // us; 每秒觸發
-}
