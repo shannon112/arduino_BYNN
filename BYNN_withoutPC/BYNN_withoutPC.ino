@@ -26,6 +26,8 @@ int S2 = 12;//pinE
 int S3 = 11;//pinF
 int taosOutPin = 10;//pinC
 int LED = 13;//pinD
+const int systemOpenPin = 2; //自動控制系統開關
+
 
 ///////////////////////////////////////////////////////////////
 ////////// variable/////////////////
@@ -38,22 +40,25 @@ Servo myServo;
 boolean missionState = 0;
 int IntIRState = 0;
 String IRState = "";
+int roundNumber = 0;
+int systemOpenState = 0;
 //**********Speed********************
-int FnormalSpeed = 30;
-int FlowSpeed = 21;
+int FnormalSpeed = 55;
+int FlowSpeed = 50;
 int FfastSpeed = 60;
-int BnormalSpeed = 60;
-int BfastSpeed = 100;
-int BlowSpeed = 30;
-int verybigDegree = 20;
+int FbrustSpeed = 100;
+int BnormalSpeed = 100;
+int BfastSpeed = 150;
+int BlowSpeed = 60;
+int verybigDegree = 25;
 int bigDegree = 15;
 int smallDegree = 10;
-int verysmallDegree = 5;
-int middleDegree = 90;
+int verysmallDegree = 10;
+int middleDegree = 82;
 //**********color********************
 boolean colorState = 0;
-int colorGapDown = 1100;
-int colorGapUp = 1205;
+int colorGapDown = 10;
+int colorGapUp = 47;
 
 
 ///////////////////////////////////////////////////////////////
@@ -62,7 +67,7 @@ int colorGapUp = 1205;
 void setup() {
   Serial.begin(9600);
   //**********receiveIR********************
-  pinMode(sensorLL, INPUT); //定義最左感測器
+  //pinMode(sensorLL, INPUT); //定義最左感測器
   pinMode(sensorL, INPUT); //定義左感測器
   pinMode(sensorM, INPUT);//定義中感測器
   pinMode(sensorR, INPUT); //定義右感測器
@@ -70,6 +75,8 @@ void setup() {
   //**********Motor********************
   BrushlessF.attach(BrushlessFPin);
   BrushlessB.attach(BrushlessBPin);
+  BrushlessF.write(0);
+  BrushlessB.write(0);
   myServo.attach(myServoPin);
   directionControl(0);
   //**********color********************
@@ -84,21 +91,60 @@ void setup() {
   //communication freq (sensitivity) selection
   pinMode(S0, OUTPUT); //S0 pinB
   pinMode(S1, OUTPUT); //S1 pinA
+  //**********system********************
+  pinMode(systemOpenPin, INPUT_PULLUP);
 }
-
 
 ///////////////////////////////////////////////////////////////
 ////////// Main function////////////////
 ///////////////////////////////////////////
 void loop() {
-  Serial.println("======================");
-  //initialize() //use another program to initialize
-  receiveIR();
-  receiveColor();
-  sortingAndAction();
-  checkMission();
-  Serial.println(IRState);
-  Serial.println("======================");
+  if (systemOpenState == 0) {
+    systemOpen();
+  } else {
+    Serial.println("======================");
+    receiveIR();
+    sortingAndAction();
+    checkMission();
+    roundNumber++;
+    if ((roundNumber % 450) == 0) {
+      receiveColor();
+    }
+    Serial.println("======================");
+  }
+}
+
+
+///////////////////////////////////////////////////////////////
+//////////systemOpen////////////////
+///////////////////////////////////////////
+void systemOpen() {
+  while (digitalRead(systemOpenPin) == 1) {
+    Serial.println("waiting system open");
+  }
+  Serial.println("system open");
+  systemInitialize();
+  systemOpenState = 1;
+}
+
+
+///////////////////////////////////////////////////////////////
+//////////systemInitialize////////////////
+///////////////////////////////////////////
+void systemInitialize() {
+  Serial.print("Okay, Starting to initailize...\n");
+  Serial.print("Setting high speed! and wait 2 sec! ");
+  Serial.println("(hearing beep-beep)");
+  BrushlessF.write(180);
+  BrushlessB.write(180);
+  delay(2000);
+  Serial.print("Setting back to low speed! and wait 4 sec! ");
+  Serial.println("(hearing beep-beep-beep)");
+  BrushlessF.write(5);
+  BrushlessB.write(5);
+  delay(4000);
+  Serial.print("MOTOR IS READY! ");
+  Serial.println("(hearing regular beep---beep---beep--- )");
 }
 
 
@@ -113,19 +159,22 @@ int stateR = 1;  //右感測器狀態
 int stateRR = 1;  //最右感測器狀態
 //**********Function********************
 void receiveIR() { //0代表黑色 1代表淺色
-  if (digitalRead(sensorLL) == 1) {
-    stateLL = 0;
-  } else {
+  if (analogRead(sensorLL) > 300) {
     stateLL = 1;
+  } else {
+    stateLL = 0;
   };
+  //  stateL = digitalRead(sensorLL);
   stateL = digitalRead(sensorL);
   stateM = digitalRead(sensorM);
   stateR = digitalRead(sensorR);
-  if (analogRead(sensorRR) > 500) {
-    stateRR = 0;
-  } else {
+  //  stateL = digitalRead(sensorRR);
+  if (analogRead(sensorRR) > 300) {
     stateRR = 1;
+  } else {
+    stateRR = 0;
   };
+
   IRState = String(stateLL) + String(stateL) + String(stateM) + String(stateR) + String(stateRR);
 }
 
@@ -138,7 +187,10 @@ void receiveColor() {
   float red = colorRead(taosOutPin, 1, 1);
   float blue = colorRead(taosOutPin, 2, 1);
   float green = colorRead(taosOutPin, 3, 1);
+  Serial.println("ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
   Serial.println(green);
+  Serial.println("ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
+
   if ((green > colorGapDown) && (green < colorGapUp))
     colorState = 1;
 }
@@ -148,25 +200,27 @@ void receiveColor() {
 //////////sortingAndAction////////////////
 ///////////////////////////////////////////
 void sortingAndAction() {
+  Serial.println(IRState);
   if (colorState == 0) {
     IntIRState = IRState.toInt();
     switch (IntIRState) {
-      case 00000:
+      case 0:  //00000
         Serial.println("all black, change to default.");
+        delay(1000);
         directionControl(0);
-        speedControl(FnormalSpeed, 10);
+        speedControl(10, 10);
         break;
       case 11111:
         Serial.println("all white, go backward");
         directionControl(0);
-        speedControl(10, BlowSpeed);
+        speedControl(10, BnormalSpeed);
         break;
-      case 01111 :
+      case 1111 : //01111
         Serial.println("need very big left turn");
         directionControl(verybigDegree);
         speedControl(FlowSpeed, 10);
         break;
-      case 00111 :
+      case 111 : //00111
         Serial.println("need big left turn");
         directionControl(bigDegree);
         speedControl(FnormalSpeed, 10);
@@ -209,12 +263,9 @@ void sortingAndAction() {
       default:
         Serial.println("WTF, not in the sort! change to default.");
         directionControl(0);
-        speedControl(FnormalSpeed, 10);
+        speedControl(10, 10);
     }
   } else {
-    speedControl(10, BnormalSpeed);
-    delay(3000);
-    speedControl(10, 10);
     missionState = 1 ;
   }
 }
@@ -228,6 +279,13 @@ void checkMission() {
     Serial.println("executing mission...");
   } else {
     Serial.println("mission complete !");
+    directionControl(0);
+    for (int i = 0; i < 7; i++) {
+      speedControl(30 + (i * 20), 10);
+      delay(1000);
+    }
+    delay(1000);
+    speedControl(10, 10);
     while (1) {
       Serial.println("waiting for shoutdown...");
       delay(2000);
@@ -248,8 +306,10 @@ void speedControl(int speedFront, int speedBack) {
 ///////////////////////////////////////////////////////////////
 //////////directionControl////////////////
 ///////////////////////////////////////////
-void directionControl(int degree) { //左正右負
-  myServo.write(middleDegree + degree);
+void directionControl(int degree) { //左負右正
+  int ddegree = middleDegree - 1 * degree;
+  myServo.write(ddegree);
+  //  Serial.println(ddegree);
 }
 
 
