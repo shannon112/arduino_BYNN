@@ -42,13 +42,11 @@ String IRState = "";
 int roundNumber = 0;
 int systemOpenState = 0;
 //**********Speed********************
+int FverylowSpeed = 50;
+int FlowSpeed = 60;
 int FnormalSpeed = 65;
-int FlowSpeed = 55;
 int FfastSpeed = 80;
-int FbrustSpeed = 100;
-int BnormalSpeed = 100;
-int BfastSpeed = 150;
-int BlowSpeed = 60;
+int FbrustSpeed =85;
 int verybigDegree = 25;
 int bigDegree = 15;
 int smallDegree = 10;
@@ -56,8 +54,8 @@ int verysmallDegree = 10;
 int middleDegree = 82;
 //**********color********************
 boolean colorState = 0;
-int colorGapDown = 2400;
-int colorGapUp = 2700;
+int colorGapDown = 24000;
+int colorGapUp = 27000;
 
 
 ///////////////////////////////////////////////////////////////
@@ -92,35 +90,22 @@ void setup() {
   pinMode(S1, OUTPUT); //S1 pinA
   //**********system********************
   pinMode(systemOpenPin, INPUT_PULLUP);
+  //**********initialize********************
+  delay(1000);
+  systemInitialize();
 }
+
 
 ///////////////////////////////////////////////////////////////
 ////////// Main function////////////////
 ///////////////////////////////////////////
 void loop() {
-  if (systemOpenState == 0) {
-    systemOpen();
-  } else {
-    //Serial.println("======================");
-    receiveIR();
-    sortingAndAction();
-    receiveColor();
-    checkMission();
-    //Serial.println("======================");
-  }
-}
-
-
-///////////////////////////////////////////////////////////////
-//////////systemOpen////////////////
-///////////////////////////////////////////
-void systemOpen() {
-  while (digitalRead(systemOpenPin) == 1) {
-    //    Serial.println("waiting system open");
-  }
-  //  Serial.println("system open");
-  systemInitialize();
-  systemOpenState = 1;
+  //Serial.println("======================");
+  //Serial.println("executing mission...");
+  receiveIR();
+  sortingAndAction();
+  receiveColor();
+  //Serial.println("======================");
 }
 
 
@@ -155,26 +140,11 @@ int stateR = 1;  //右感測器狀態
 int stateRR = 1;  //最右感測器狀態
 //**********Function********************
 void receiveIR() { //0代表黑色 1代表淺色
-  if (analogRead(sensorLL) > 300) {
-    stateLL = 1;
-  } else {
-    stateLL = 0;
-    directionControl(verybigDegree);
-    speedControl(FlowSpeed, 10);
-  };
-  //  stateL = digitalRead(sensorLL);
+  stateLL = digitalRead(sensorLL);
   stateL = digitalRead(sensorL);
   stateM = digitalRead(sensorM);
   stateR = digitalRead(sensorR);
-  //  stateL = digitalRead(sensorRR);
-  if (analogRead(sensorRR) > 300) {
-    stateRR = 1;
-  } else {
-    stateRR = 0;
-    directionControl(-1 * verybigDegree);
-    speedControl(FlowSpeed, 10);
-  };
-
+  stateRR = digitalRead(sensorRR);
   IRState = String(stateLL) + String(stateL) + String(stateM) + String(stateR) + String(stateRR);
 }
 
@@ -184,82 +154,79 @@ void receiveIR() { //0代表黑色 1代表淺色
 ///////////////////////////////////////////
 void receiveColor() {
   float green = colorRead(taosOutPin);
-  Serial.print("color index: ");
-  Serial.println(green);
-
+  //Serial.print("color index: ");
+  //Serial.println(green);
   if ((green > colorGapDown) && (green < colorGapUp)) {
     colorState = 1;
+    checkMission();
   }
 }
+
 
 ///////////////////////////////////////////////////////////////
 //////////sortingAndAction////////////////
 ///////////////////////////////////////////
 void sortingAndAction() {
-  Serial.println(IRState);
-  if (colorState == 0) {
-    IntIRState = IRState.toInt();
-    switch (IntIRState) {
-      case 11110 :
-        //        Serial.println("need very big right turn");
-        directionControl(-1 * verybigDegree);
-        speedControl(FlowSpeed, 10);
-        break;
-      case 1111 : //01111
-        //        Serial.println("need very big left turn");
-        directionControl(verybigDegree);
-        speedControl(FlowSpeed, 10);
-        break;
-      case 111 : //00111
-        //        Serial.println("need big left turn");
-        directionControl(bigDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 11100 :
-        //        Serial.println("need big right turn");
-        directionControl(-1 * bigDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 10111 :
-        //        Serial.println("need small left turn");
-        directionControl(smallDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 11101 :
-        //        Serial.println("need small right turn");
-        directionControl(-1 * smallDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 10011 :
-        //        Serial.println("need very small left turn");
-        directionControl(verysmallDegree);
-        speedControl(FfastSpeed, 10);
-        break;
-      case 11011 :
-        Serial.println("straight forward! ");
-        directionControl(0);
-        speedControl(FfastSpeed, 10);
-        break;
-      case 11001 :
-        //        Serial.println("need very small right turn");
-        directionControl(-1 * verysmallDegree);
-        speedControl(FfastSpeed, 10);
-        break;
-      case 0:  //00000
-        //        Serial.println("all black, change to default.");
-        directionControl(0);
-        speedControl(10, 10);
-        break;
-      case 11111:
-        //        Serial.println("all white, go backward");
-        speedControl(FnormalSpeed, 10);
-        break;
-      default:
-        //        Serial.println("WTF, not in the sort! change to default.");
-        speedControl(FnormalSpeed, 10);
-    }
-  } else {
-    missionState = 1 ;
+  //Serial.println(IRState);
+  IntIRState = IRState.toInt();
+  switch (IntIRState) {
+    case 1111 : //01111
+      //Serial.println("need very big left turn");
+      directionControl(verybigDegree);
+      speedControl(FverylowSpeed, 10);
+      break;
+    case 11110 :
+      //Serial.println("need very big right turn");
+      directionControl(-1 * verybigDegree);
+      speedControl(FverylowSpeed, 10);
+      break;
+    case 111 : //00111
+      // Serial.println("need big left turn");
+      directionControl(bigDegree);
+      speedControl(FlowSpeed, 10);
+      break;
+    case 11100 :
+      //Serial.println("need big right turn");
+      directionControl(-1 * bigDegree);
+      speedControl(FlowSpeed, 10);
+      break;
+    case 10111 :
+      //Serial.println("need small left turn");
+      directionControl(smallDegree);
+      speedControl(FnormalSpeed, 10);
+      break;
+    case 11101 :
+      //Serial.println("need small right turn");
+      directionControl(-1 * smallDegree);
+      speedControl(FnormalSpeed, 10);
+      break;
+    case 10011 :
+      //Serial.println("need very small left turn");
+      directionControl(verysmallDegree);
+      speedControl(FfastSpeed, 10);
+      break;
+    case 11001 :
+      //Serial.println("need very small right turn");
+      directionControl(-1 * verysmallDegree);
+      speedControl(FfastSpeed, 10);
+      break;
+    case 11011 :
+      //Serial.println("straight forward! ");
+      directionControl(0);
+      speedControl(FbrustSpeed, 10);
+      break;
+    case 0:  //00000
+      //Serial.println("all black, stop!.");
+      directionControl(0);
+      speedControl(10, 10);
+      break;
+    case 11111:
+      //Serial.println("all white, maintain direction!");
+      speedControl(FverylowSpeed, 10);
+      break;
+    default:
+      //Serial.println("WTF, not in the sort! maintain direction.");
+      speedControl(FverylowSpeed, 10);
   }
 }
 
@@ -268,16 +235,12 @@ void sortingAndAction() {
 //////////checkMission////////////////
 ///////////////////////////////////////////
 void checkMission() {
-  if (missionState == 0) {
-    //    Serial.println("executing mission...");
-  } else {
-    Serial.println("mission complete !");
-    directionControl(0);
-    speedControl(10, 10);
-    while (1) {
-      Serial.println("waiting for shoutdown...");
-      delay(2000);
-    }
+  Serial.println("mission complete !");
+  directionControl(0);
+  speedControl(10, 10);
+  while (1) {
+    Serial.println("waiting for shoutdown...");
+    delay(2000);
   }
 }
 
@@ -297,8 +260,9 @@ void speedControl(int speedFront, int speedBack) {
 void directionControl(int degree) { //左負右正
   int ddegree = middleDegree - 1 * degree;
   myServo.write(ddegree);
-  //  Serial.println(ddegree);
+  //Serial.println(ddegree);
 }
+
 
 ///////////////////////////////////////////////////////////////
 //////////color////////////////
@@ -373,22 +337,3 @@ void taosMode(int mode) {
     digitalWrite(S1, HIGH); //S1
   }
 }
-/*
-  void heightDetect() {
-  long height = ping();
-  Serial.println(height);
-  if (height < heightFixd) {
-    missionState = 1;
-  }
-  }
-
-
-  long ping() {
-  digitalWrite(TRIGPIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIGPIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIGPIN, LOW);
-  return pulseIn(ECHOPIN, HIGH) / 10;
-  }
-*/
