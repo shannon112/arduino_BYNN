@@ -8,7 +8,6 @@
    需調前進速度！
 */
 #include <Servo.h>
-
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
 ///////////////////////////////////////////
@@ -43,9 +42,9 @@ String IRState = "";
 int roundNumber = 0;
 int systemOpenState = 0;
 //**********Speed********************
-int FnormalSpeed = 55;
-int FlowSpeed = 50;
-int FfastSpeed = 60;
+int FnormalSpeed = 65;
+int FlowSpeed = 55;
+int FfastSpeed = 80;
 int FbrustSpeed = 100;
 int BnormalSpeed = 100;
 int BfastSpeed = 150;
@@ -57,8 +56,8 @@ int verysmallDegree = 10;
 int middleDegree = 82;
 //**********color********************
 boolean colorState = 0;
-int colorGapDown = 10;
-int colorGapUp = 47;
+int colorGapDown = 2400;
+int colorGapUp = 2700;
 
 
 ///////////////////////////////////////////////////////////////
@@ -102,15 +101,12 @@ void loop() {
   if (systemOpenState == 0) {
     systemOpen();
   } else {
-    Serial.println("======================");
+    //Serial.println("======================");
     receiveIR();
     sortingAndAction();
+    receiveColor();
     checkMission();
-    roundNumber++;
-    if ((roundNumber % 450) == 0) {
-      receiveColor();
-    }
-    Serial.println("======================");
+    //Serial.println("======================");
   }
 }
 
@@ -120,9 +116,9 @@ void loop() {
 ///////////////////////////////////////////
 void systemOpen() {
   while (digitalRead(systemOpenPin) == 1) {
-    Serial.println("waiting system open");
+    //    Serial.println("waiting system open");
   }
-  Serial.println("system open");
+  //  Serial.println("system open");
   systemInitialize();
   systemOpenState = 1;
 }
@@ -163,6 +159,8 @@ void receiveIR() { //0代表黑色 1代表淺色
     stateLL = 1;
   } else {
     stateLL = 0;
+    directionControl(verybigDegree);
+    speedControl(FlowSpeed, 10);
   };
   //  stateL = digitalRead(sensorLL);
   stateL = digitalRead(sensorL);
@@ -173,6 +171,8 @@ void receiveIR() { //0代表黑色 1代表淺色
     stateRR = 1;
   } else {
     stateRR = 0;
+    directionControl(-1 * verybigDegree);
+    speedControl(FlowSpeed, 10);
   };
 
   IRState = String(stateLL) + String(stateL) + String(stateM) + String(stateR) + String(stateRR);
@@ -183,18 +183,14 @@ void receiveIR() { //0代表黑色 1代表淺色
 //////////receiveColor////////////////
 ///////////////////////////////////////////
 void receiveColor() {
-  float white = colorRead(taosOutPin, 0, 1);
-  float red = colorRead(taosOutPin, 1, 1);
-  float blue = colorRead(taosOutPin, 2, 1);
-  float green = colorRead(taosOutPin, 3, 1);
-  Serial.println("ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
+  float green = colorRead(taosOutPin);
+  Serial.print("color index: ");
   Serial.println(green);
-  Serial.println("ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp");
 
-  if ((green > colorGapDown) && (green < colorGapUp))
+  if ((green > colorGapDown) && (green < colorGapUp)) {
     colorState = 1;
+  }
 }
-
 
 ///////////////////////////////////////////////////////////////
 //////////sortingAndAction////////////////
@@ -204,34 +200,38 @@ void sortingAndAction() {
   if (colorState == 0) {
     IntIRState = IRState.toInt();
     switch (IntIRState) {
-      case 0:  //00000
-        Serial.println("all black, change to default.");
-        delay(1000);
-        directionControl(0);
-        speedControl(10, 10);
-        break;
-      case 11111:
-        Serial.println("all white, go backward");
-        directionControl(0);
-        speedControl(10, BnormalSpeed);
+      case 11110 :
+        //        Serial.println("need very big right turn");
+        directionControl(-1 * verybigDegree);
+        speedControl(FlowSpeed, 10);
         break;
       case 1111 : //01111
-        Serial.println("need very big left turn");
+        //        Serial.println("need very big left turn");
         directionControl(verybigDegree);
         speedControl(FlowSpeed, 10);
         break;
       case 111 : //00111
-        Serial.println("need big left turn");
+        //        Serial.println("need big left turn");
         directionControl(bigDegree);
         speedControl(FnormalSpeed, 10);
         break;
+      case 11100 :
+        //        Serial.println("need big right turn");
+        directionControl(-1 * bigDegree);
+        speedControl(FnormalSpeed, 10);
+        break;
       case 10111 :
-        Serial.println("need small left turn");
+        //        Serial.println("need small left turn");
         directionControl(smallDegree);
         speedControl(FnormalSpeed, 10);
         break;
+      case 11101 :
+        //        Serial.println("need small right turn");
+        directionControl(-1 * smallDegree);
+        speedControl(FnormalSpeed, 10);
+        break;
       case 10011 :
-        Serial.println("need very small left turn");
+        //        Serial.println("need very small left turn");
         directionControl(verysmallDegree);
         speedControl(FfastSpeed, 10);
         break;
@@ -241,29 +241,22 @@ void sortingAndAction() {
         speedControl(FfastSpeed, 10);
         break;
       case 11001 :
-        Serial.println("need very small right turn");
+        //        Serial.println("need very small right turn");
         directionControl(-1 * verysmallDegree);
         speedControl(FfastSpeed, 10);
         break;
-      case 11101 :
-        Serial.println("need small right turn");
-        directionControl(-1 * smallDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 11100 :
-        Serial.println("need big right turn");
-        directionControl(-1 * bigDegree);
-        speedControl(FnormalSpeed, 10);
-        break;
-      case 11110 :
-        Serial.println("need very big right turn");
-        directionControl(-1 * verybigDegree);
-        speedControl(FlowSpeed, 10);
-        break;
-      default:
-        Serial.println("WTF, not in the sort! change to default.");
+      case 0:  //00000
+        //        Serial.println("all black, change to default.");
         directionControl(0);
         speedControl(10, 10);
+        break;
+      case 11111:
+        //        Serial.println("all white, go backward");
+        speedControl(FnormalSpeed, 10);
+        break;
+      default:
+        //        Serial.println("WTF, not in the sort! change to default.");
+        speedControl(FnormalSpeed, 10);
     }
   } else {
     missionState = 1 ;
@@ -276,15 +269,10 @@ void sortingAndAction() {
 ///////////////////////////////////////////
 void checkMission() {
   if (missionState == 0) {
-    Serial.println("executing mission...");
+    //    Serial.println("executing mission...");
   } else {
     Serial.println("mission complete !");
     directionControl(0);
-    for (int i = 0; i < 7; i++) {
-      speedControl(30 + (i * 20), 10);
-      delay(1000);
-    }
-    delay(1000);
     speedControl(10, 10);
     while (1) {
       Serial.println("waiting for shoutdown...");
@@ -312,7 +300,6 @@ void directionControl(int degree) { //左負右正
   //  Serial.println(ddegree);
 }
 
-
 ///////////////////////////////////////////////////////////////
 //////////color////////////////
 ///////////////////////////////////////////
@@ -327,38 +314,23 @@ void directionControl(int degree) { //左負右正
   taosOutPin is the ouput pin of the TCS3200.
 */
 
-float colorRead(int taosOutPin, int color, boolean LEDstate) {
+float colorRead(int taosOutPin) {
   //turn on sensor and use highest frequency/sensitivity setting
-  taosMode(1);
+  taosMode(3);
 
   //setting for a delay to let the sensor sit for a moment before taking a reading.
-  int sensorDelay = 100;
+  int sensorDelay = 50;
 
   //set the S2 and S3 pins to select the color to be sensed
-  if (color == 0) {//white
-    digitalWrite(S3, LOW); //S3
-    digitalWrite(S2, HIGH); //S2
-  } else if (color == 1) {//red
-    digitalWrite(S3, LOW); //S3
-    digitalWrite(S2, LOW); //S2
-  } else if (color == 2) { //blåck
-    digitalWrite(S3, HIGH); //S3
-    digitalWrite(S2, LOW); //S2
-  } else if (color == 3) {//green
-    digitalWrite(S3, HIGH); //S3
-    digitalWrite(S2, HIGH); //S2
-  }
+  //(color == 3) {//green
+  digitalWrite(S3, HIGH); //S3
+  digitalWrite(S2, HIGH); //S2
 
   // create a var where the pulse reading from sensor will go
   float readPulse;
 
   //  turn LEDs on or off, as directed by the LEDstate var (IKKE Frydenlund)
-  if (LEDstate == 0) {
-    digitalWrite(LED, LOW);
-  }
-  if (LEDstate == 1) {
-    digitalWrite(LED, HIGH);
-  }
+  digitalWrite(LED, HIGH);
 
   // wait a bit for LEDs to actually turn on, as directed by sensorDelay var
   delay(sensorDelay);
@@ -376,7 +348,6 @@ float colorRead(int taosOutPin, int color, boolean LEDstate) {
 
   // return the pulse value back to whatever called for it...
   return readPulse;
-
 }
 
 // Operation modes area, controlled by hi/lo settings on S0 and S1 pins.
@@ -402,4 +373,22 @@ void taosMode(int mode) {
     digitalWrite(S1, HIGH); //S1
   }
 }
+/*
+  void heightDetect() {
+  long height = ping();
+  Serial.println(height);
+  if (height < heightFixd) {
+    missionState = 1;
+  }
+  }
 
+
+  long ping() {
+  digitalWrite(TRIGPIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIGPIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGPIN, LOW);
+  return pulseIn(ECHOPIN, HIGH) / 10;
+  }
+*/

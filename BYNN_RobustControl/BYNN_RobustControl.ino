@@ -12,8 +12,8 @@
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
 ///////////////////////////////////////////
-//const int sensorLL =2;     //interrupt 0
-//const int sensorRR = 3;     //interrupt 1
+const int sensorLL = 2;    //interrupt 0
+const int sensorRR = 3;     //interrupt 1
 const int systemOpenPin = 4; //自動控制系統開關
 const int BrushlessFPin = 6;
 const int BrushlessBPin = 7;
@@ -52,7 +52,7 @@ int FbrustSpeed = 100;
 int BnormalSpeed = 100;
 int BfastSpeed = 150;
 int BlowSpeed = 60;
-int verybigDegree = 40;
+int verybigDegree = 15;
 int bigDegree = 15;
 int smallDegree = 10;
 int verysmallDegree = 10;
@@ -69,8 +69,8 @@ int colorGapUp = 47;
 void setup() {
   Serial.begin(9600);
   //**********receiveIR********************
-  attachInterrupt(0, sensorLLGetBlack, LOW);
-  attachInterrupt(1, sensorRRGetBlack, LOW);
+  attachInterrupt(0, sensorLLGetBlack, CHANGE);
+  attachInterrupt(1, sensorRRGetBlack, CHANGE);
   //**********Motor********************
   BrushlessF.attach(BrushlessFPin);
   BrushlessB.attach(BrushlessBPin);
@@ -106,9 +106,12 @@ void loop() {
   if (systemOpenState == 0) {
     systemOpen();
     goForward();
+    directionControl(0);
   } else {
     Serial.println("======================");
-    directionControl(0);
+    Serial.println(digitalRead(sensorLL));
+    Serial.println(digitalRead(sensorRR));
+    Serial.println("go straight");
     receiveColor();
     checkMission();
     Serial.println("======================");
@@ -154,7 +157,7 @@ void systemInitialize() {
 ///////////////////////////////////////////
 void goForward() {
   directionControl(0);
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 3; i++) {
     speedControl(30 + (i * 25), 10);
     delay(500);
   }
@@ -305,19 +308,21 @@ void taosMode(int mode) {
 ///////////////////////////////////////////////////////////////
 //////////HC-SR04////////////////
 ///////////////////////////////////////////
-void heightDetect() {
+/*
+  void heightDetect() {
   long height = ping();
   if (height < heightFixd) {
     missionState = 1;
   }
-}
+  }
 
 
-long ping() {
+  long ping() {
   digitalWrite(TRIGPIN, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIGPIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIGPIN, LOW);
   return pulseIn(ECHOPIN, HIGH) / 10;
-}
+  }
+*/
