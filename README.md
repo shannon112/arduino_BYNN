@@ -36,3 +36,6 @@ System:
   
 Product:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.jpg" width="500">
+  
+Demo video:  
+https://youtu.be/z28eU2QULkE
