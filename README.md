@@ -25,12 +25,11 @@ CTRT5000 x5 --紅外線循跡模組
 Coming soon  
   
 ### Instruction  
-step0. turn off all button. (motor battery, system)  
+step0. turn off all button. (motor battery)  
 step1. upload code from PC to Arduino nano.  
 step2. change the Arduino nano power supply to mobile power pack.  
 step3. push the reset button of Arduino nano.  
-step4. open the motor battery button, and wait the sound.  
-step5. open the system button, and ready to go!  
+step4. immediately, open the motor battery button.  
   
 System:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image.jpg" width="300">
