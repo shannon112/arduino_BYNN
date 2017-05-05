@@ -8,26 +8,24 @@
    需調前進速度！
 */ 
 #include <Servo.h>
-//#include "sortingAndActionNoMove.h"
-//#include "sortingAndActionSharp.h"
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
 ///////////////////////////////////////////
-const int sensorLL = 18;     //新的，一變黑就會有值
-const int sensorL = 17;      //左感測器輸入腳，舊的要對到膠帶正中間才有
-const int sensorM = 16;   //中感測器輸入腳
-const int sensorR = 15;     //右感測器輸入腳
-const int sensorRR = 14;     //新的，一變黑就會有值
-const int BrushlessFPin = 3;
-const int BrushlessBPin = 4;
-const int myServoPin = 5;
-int S0 = 8;//pinB
-int S1 = 9;//pinA
-int S2 = 12;//pinE
-int S3 = 11;//pinF
-int taosOutPin = 10;//pinC
-int LED = 13;//pinD
-const int systemOpenPin = 2; //自動控制系統開關
+const int sensorLL = 18;     //more left CTRT5000 data pin
+const int sensorL = 17;      //left CTRT5000 data pin
+const int sensorM = 16;      //mid CTRT5000 data pin
+const int sensorR = 15;      //right CTRT5000 data pin
+const int sensorRR = 14;     //more right CTRT5000 data pin
+const int BrushlessFPin = 3;   //forward BLDC motor ESC data pin
+const int BrushlessBPin = 4;   //backward BLDC motor ESC data pin
+const int myServoPin = 5;    //direction control servo motor data pin
+const int S0 = 8;         //TCS3200
+const int S1 = 9;         //TCS3200
+const int S2 = 12;        //TCS3200
+const int S3 = 11;        //TCS3200
+const int taosOutPin = 10;//TCS3200
+const int LED = 13;       //TCS3200
+//const int systemOpenPin = 2; //自動控制系統開關
 
 
 ///////////////////////////////////////////////////////////////
@@ -58,8 +56,8 @@ int middleDegree = 82;
 int breakcounter=0;
 //**********color********************
 boolean colorState = 0;
-int colorGapDown = 1680;
-int colorGapUp = 2030;
+int colorGapDown = 1380;
+int colorGapUp = 2000;
 int colornumber = 0;
 
 
@@ -94,7 +92,7 @@ void setup() {
   pinMode(S0, OUTPUT); //S0 pinB
   pinMode(S1, OUTPUT); //S1 pinA
   //**********system********************
-  pinMode(systemOpenPin, INPUT_PULLUP);
+//  pinMode(systemOpenPin, INPUT_PULLUP);
   //**********initialize********************
   delay(1000);
   systemInitialize();
