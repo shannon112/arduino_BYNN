@@ -28,12 +28,15 @@ step4. immediately, open the motor battery button.
   
 System:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image.jpg" width="300">
-  
+
 Product:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.jpg" width="500">
   
 Testing area:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image03.JPG" width="500">
+  
+Group members:  
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image04.jpg" width="500">
   
 Demo video:  
 v3.1: https://youtu.be/z28eU2QULkE  
