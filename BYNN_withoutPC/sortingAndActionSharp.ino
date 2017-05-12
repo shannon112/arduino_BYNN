@@ -1,14 +1,35 @@
-///////////////////////////////////////////////////////////////
-//////////sortingAndActionSharp////////////////
-///////////////////////////////////////////
+//pass final test data
 void sortingAndActionSharp() {
-  FverylowSpeed = 30;
-  FlowSpeed = 40;
-  FnormalSpeed = 55;
-  FfastSpeed = 60;
-  FbrustSpeed = 65;
-  verybigDegree = 35;
-  bigDegree = 25;
-  smallDegree = 22;
-  verysmallDegree = 20;
+  FverylowSpeed = 40;
+  FlowSpeed = 60;
+  FnormalSpeed = 65;
+  FfastSpeed = 65;
+  FbrustSpeed = 75;
+  BverylowSpeed = 10;
+  BlowSpeed = 10;
+  BnormalSpeed = 10;
+  BfastSpeed = 10;
+  BbrustSpeed = 10;
+  verybigDegree = 40;
+  bigDegree = 15;
+  smallDegree = 12;
+  verysmallDegree = 10;
+}
+
+//pass final test data add load
+void sortingAndActionSharpp() {
+  FverylowSpeed = 40;
+  FlowSpeed = 60;
+  FnormalSpeed = 65;
+  FfastSpeed = 65;
+  FbrustSpeed = 75;
+  BverylowSpeed = 10;
+  BlowSpeed = 10;
+  BnormalSpeed = 10;
+  BfastSpeed = 10;
+  BbrustSpeed = 10;
+  verybigDegree = 40;
+  bigDegree = 15;
+  smallDegree = 12;
+  verysmallDegree = 10;
 }
