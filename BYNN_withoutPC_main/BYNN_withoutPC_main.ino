@@ -42,11 +42,12 @@ String IRState = "";
 int roundNumber = 0;
 int systemOpenState = 0;
 //**********Speed********************
-int FverylowSpeed = 40;
-int FlowSpeed = 60;
-int FnormalSpeed = 65;
-int FfastSpeed = 75;
-int FbrustSpeed = 85;
+int n=1;
+int FverylowSpeed = 70;
+int FlowSpeed = 75;
+int FnormalSpeed = 85;
+int FfastSpeed = 85;
+int FbrustSpeed = 95;
 int BverylowSpeed = 10;
 int BlowSpeed = 10;
 int BnormalSpeed = 10;

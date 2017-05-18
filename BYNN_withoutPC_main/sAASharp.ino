@@ -17,7 +17,7 @@ void sortingAndActionSharp() {
 }
 
 //pass final test data add load
-void sortingAndActionSharpp() {
+void sortingAndActionSharpNew() {
   FverylowSpeed = 40;
   FlowSpeed = 60;
   FnormalSpeed = 65;
