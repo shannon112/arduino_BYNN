@@ -6,7 +6,7 @@
    需調顏色上下限！
    需調轉彎角度！
    需調前進速度！
-*/ 
+*/
 #include <Servo.h>
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
@@ -42,24 +42,30 @@ String IRState = "";
 int roundNumber = 0;
 int systemOpenState = 0;
 //**********Speed********************
-int FverylowSpeed = 50;
-int FlowSpeed = 60;
-int FnormalSpeed = 65;
-int FfastSpeed = 70;
-int FbrustSpeed = 80;
+int n=1;
+int FverylowSpeed = 70;
+int FlowSpeed = 75;
+int FnormalSpeed = 85;
+int FfastSpeed = 85;
+int FbrustSpeed = 95;
+int BverylowSpeed = 10;
+int BlowSpeed = 10;
+int BnormalSpeed = 10;
+int BfastSpeed = 10;
 int BbrustSpeed = 10;
-int verybigDegree = 25;
+int verybigDegree = 40;
 int bigDegree = 15;
 int smallDegree = 12;
 int verysmallDegree = 10;
 int middleDegree = 82;
-int breakcounter=0;
+int breakcounter = 0;
 //**********color********************
 boolean colorState = 0;
 int colorGapDown = 1380;
 int colorGapUp = 2000;
 int colornumber = 0;
-
+float colorIndex = 1;
+float balanceGreen = 1;
 
 ///////////////////////////////////////////////////////////////
 ////////// Set up/////////////////
@@ -92,10 +98,15 @@ void setup() {
   pinMode(S0, OUTPUT); //S0 pinB
   pinMode(S1, OUTPUT); //S1 pinA
   //**********system********************
-//  pinMode(systemOpenPin, INPUT_PULLUP);
+  //  pinMode(systemOpenPin, INPUT_PULLUP);
   //**********initialize********************
   delay(1000);
   systemInitialize();
+//  delay(1000);
+//  for (int i = 0; i < 10; i++) {
+//    colorRead(taosOutPin);
+//  }
+//  ColorBalance();
 }
 
 
@@ -107,7 +118,7 @@ void loop() {
   //Serial.println("executing mission...");
   receiveIR();
   sortingAndAction();
-  receiveColor();
+//  receiveColor();
   //Serial.println("======================");
 }
 
@@ -157,9 +168,13 @@ void receiveIR() { //0代表黑色 1代表淺色
 ///////////////////////////////////////////
 void receiveColor() {
   float green = colorRead(taosOutPin);
-  //Serial.print("color index: ");
-  //Serial.println(green);
-  if ((green > colorGapDown) && (green < colorGapUp)) {
+  balanceGreen = green * colorIndex;
+  Serial.print("true color : ");
+  Serial.println(green);
+  Serial.print("Balance color : ");
+  Serial.println(balanceGreen);
+
+  if ((balanceGreen > colorGapDown) && (balanceGreen < colorGapUp)) {
     colornumber++;
     if (colornumber > 5) {
       colorState = 1;
@@ -175,7 +190,12 @@ void receiveColor() {
 void checkMission() {
   //Serial.println("mission complete !");
   //Serial.println("waiting for shoutdown...");
-  sortingAndActionNoMove();
+  sortingAndActionForceStop();
+  if ((breakcounter > 50) && (breakcounter < 100)) {
+    sortingAndActionNoMove();
+  } else if (breakcounter > 100) {
+    sortingAndActionSharp();
+  }
 }
 
 

@@ -71,3 +71,7 @@ void taosMode(int mode) {
     digitalWrite(S1, HIGH); //S1
   }
 }
+
+void ColorBalance(){
+  colorIndex=5000/colorRead(taosOutPin);
+}
