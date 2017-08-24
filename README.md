@@ -1,5 +1,6 @@
 # arduino_BYNN
 「 Blow You No No 」  
+PLEASE USE CODE IN BYNN_whitoutPC_main folder
   
 ### Guide  
 This is a wind driven car control system.  
