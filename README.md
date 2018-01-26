@@ -6,7 +6,7 @@ PLEASE USE CODE IN 「 BYNN_whitoutPC_main 」 FLODER
 This is a wind driven car control system.  
 It has line tracking and color detection features.  
 It is built to complish the missions of NTU ME capstone goal.  
-<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.jpg" width="500">
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.png" width="500">
   
 ### 2.Hardware required   
 TCS3200 x1 -- color sensor   
