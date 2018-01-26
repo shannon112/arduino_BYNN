@@ -11,7 +11,7 @@
   if LEDstate is 0, LED will be off. 1 and the LED will be on.
   taosOutPin is the ouput pin of the TCS3200.
 */
-
+/*
 float colorRead(int taosOutPin) {
   //turn on sensor and use highest frequency/sensitivity setting
   taosMode(3);
@@ -75,3 +75,4 @@ void taosMode(int mode) {
 void ColorBalance(){
   colorIndex=5000/colorRead(taosOutPin);
 }
+*/

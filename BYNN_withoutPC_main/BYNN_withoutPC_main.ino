@@ -10,7 +10,7 @@
 #include <Servo.h>
 ///////////////////////////////////////////////////////////////
 ////////// Pins /////////////////
-///////////////////////////////////////////
+///////////////////////////////////////////ㄌ
 const int sensorLL = 18;     //more left CTRT5000 data pin
 const int sensorL = 17;      //left CTRT5000 data pin
 const int sensorM = 16;      //mid CTRT5000 data pin
@@ -19,14 +19,19 @@ const int sensorRR = 14;     //more right CTRT5000 data pin
 const int BrushlessFPin = 3;   //forward BLDC motor ESC data pin
 const int BrushlessBPin = 4;   //backward BLDC motor ESC data pin
 const int myServoPin = 5;    //direction control servo motor data pin
-const int S0 = 8;         //TCS3200
-const int S1 = 9;         //TCS3200
-const int S2 = 12;        //TCS3200
-const int S3 = 11;        //TCS3200
-const int taosOutPin = 10;//TCS3200
-const int LED = 13;       //TCS3200
-//const int systemOpenPin = 2; //自動控制系統開關
-
+const int midLED = 2;        //如果小車走在線上則亮
+const int rightLED = 6;      //如果小車要右轉則亮
+const int leftLED = 7;       //如果小車要左轉則亮
+const int whyLED = 10;       //如果循跡情況不在正常的case裡則亮
+/*
+  const int S0 = 8;         //TCS3200
+  const int S1 = 9;         //TCS3200
+  const int S2 = 12;        //TCS3200
+  const int S3 = 11;        //TCS3200
+  const int taosOutPin = 10;//TCS3200
+  const int LED = 13;       //TCS3200
+  //const int systemOpenPin = 2; //自動控制系統開關
+*/
 
 ///////////////////////////////////////////////////////////////
 ////////// variable/////////////////
@@ -42,12 +47,26 @@ String IRState = "";
 int roundNumber = 0;
 int systemOpenState = 0;
 //**********Speed********************
-int n=1;
-int FverylowSpeed = 70;
-int FlowSpeed = 75;
-int FnormalSpeed = 85;
-int FfastSpeed = 85;
-int FbrustSpeed = 95;
+int n = 1;
+int FverylowSpeed = 55;
+int FlowSpeed = 65;
+int FnormalSpeed = 65;
+int FfastSpeed = 75;
+int FbrustSpeed = 75;
+/*
+int FverylowSpeed = 65;
+int FlowSpeed = 70;
+int FnormalSpeed = 80;
+int FfastSpeed = 80;
+int FbrustSpeed = 90;
+*/
+/*
+int FverylowSpeed = 80;
+int FlowSpeed = 85;
+int FnormalSpeed = 95;
+int FfastSpeed = 95;
+int FbrustSpeed = 105;
+*/
 int BverylowSpeed = 10;
 int BlowSpeed = 10;
 int BnormalSpeed = 10;
@@ -85,29 +104,38 @@ void setup() {
   BrushlessB.write(0);
   myServo.attach(myServoPin);
   directionControl(0);
-  //**********color********************
-  // TCS3200 初始化
-  //initialize pins
-  pinMode(LED, OUTPUT); //LED pinD
-  //color mode selection
-  pinMode(S2, OUTPUT); //S2 pinE
-  pinMode(S3, OUTPUT); //S3 pinF
-  //color response pin (only actual input from taos)
-  pinMode(taosOutPin, INPUT); //taosOutPin pinC
-  //communication freq (sensitivity) selection
-  pinMode(S0, OUTPUT); //S0 pinB
-  pinMode(S1, OUTPUT); //S1 pinA
-  //**********system********************
-  //  pinMode(systemOpenPin, INPUT_PULLUP);
+  //**********LED********************
+  pinMode(midLED, OUTPUT);
+  pinMode(leftLED, OUTPUT);
+  pinMode(rightLED, OUTPUT);
+  pinMode(whyLED, OUTPUT);
+  /*
+    //**********color********************
+    // TCS3200 初始化
+    //initialize pins
+    pinMode(LED, OUTPUT); //LED pinD
+    //color mode selection
+    pinMode(S2, OUTPUT); //S2 pinE
+    pinMode(S3, OUTPUT); //S3 pinF
+    //color response pin (only actual input from taos)
+    pinMode(taosOutPin, INPUT); //taosOutPin pinC
+    //communication freq (sensitivity) selection
+    pinMode(S0, OUTPUT); //S0 pinB
+    pinMode(S1, OUTPUT); //S1 pinA
+    //**********system********************
+    //  pinMode(systemOpenPin, INPUT_PULLUP);
+  */
   //**********initialize********************
   delay(1000);
   systemInitialize();
-//  delay(1000);
-//  for (int i = 0; i < 10; i++) {
-//    colorRead(taosOutPin);
-//  }
-//  ColorBalance();
+
+  //  delay(1000);
+  //  for (int i = 0; i < 10; i++) {
+  //    colorRead(taosOutPin);
+  //  }
+  //  ColorBalance();
 }
+
 
 
 ///////////////////////////////////////////////////////////////
@@ -118,7 +146,7 @@ void loop() {
   //Serial.println("executing mission...");
   receiveIR();
   sortingAndAction();
-//  receiveColor();
+  //  receiveColor();
   //Serial.println("======================");
 }
 
@@ -166,7 +194,8 @@ void receiveIR() { //0代表黑色 1代表淺色
 ///////////////////////////////////////////////////////////////
 //////////receiveColor////////////////
 ///////////////////////////////////////////
-void receiveColor() {
+/*
+  void receiveColor() {
   float green = colorRead(taosOutPin);
   balanceGreen = green * colorIndex;
   Serial.print("true color : ");
@@ -181,8 +210,8 @@ void receiveColor() {
       checkMission();
     }
   }
-}
-
+  }
+*/
 
 ///////////////////////////////////////////////////////////////
 //////////checkMission////////////////
