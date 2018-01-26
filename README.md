@@ -1,46 +1,43 @@
 # arduino_BYNN
-「 Blow You No No 」  
+### A Wind driven line tracking car / bluetooth remote control car
 PLEASE USE CODE IN 「 BYNN_whitoutPC_main 」 FLODER
   
-### Guide  
+### Intro  
 This is a wind driven car control system.  
 It has line tracking and color detection features.  
 It is built to complish the missions of NTU ME capstone goal.  
-I suggest using the tag v4.0 version, that is the most stable version to complish the mission.  
-Based on Arduino nano.  
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.jpg" width="500">
   
-### Power source/device  
+### Hardware required   
+TCS3200 x1 -- color sensor   
+CTRT5000 x5 -- IR sensor  
 ESC(XXD HW30A 30A) x2  --新西達30A 無刷電變 好盈程序  
 Brushless motor(XXD A2212 2450KV)x2  --新西達 A2212 2450KV 無刷馬達  
-  
-### Sensor  
-TCS3200 x1 --顏色辨識模組  
-CTRT5000 x5 --紅外線循跡模組  
-  
-### Wiring  
-Coming soon  
-  
-### Instruction  
-step0. turn off all button. (motor battery)  
-step1. upload code from PC to Arduino nano.  
-step2. change the Arduino nano power supply to mobile power pack.  
-step3. push the reset button of Arduino nano.  
-step4. immediately, open the motor battery button.  
-  
-System:  
-<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image.jpg" width="300">
+Arduino nano x1  
 
-Product:  
-<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image02.jpg" width="500">
-  
-Testing area:  
+### Hardware Connections :
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image07.png" width="500">
+
+### Testing area:  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image03.JPG" width="500">
+
+### Source code
+* line tracking car：https://github.com/shannon112/arduino_BYNN
+* bluetooth remote control car：https://github.com/shannon112/arduino_SPYFU
   
-Group members:  
-<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image04.jpg" width="500">
+### Demo & Intro post :  
+https://drive.google.com/open?id=1Gu-Cbfq4YxcM4GdHtnRB1Ww3ta_JvzpZ
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image06.png" width="500">
   
-Demo video:  
-v3.1: https://youtu.be/z28eU2QULkE  
-v4.0: https://youtu.be/E3dbgf6o6aQ  
-v5.0: https://youtu.be/8me6_menD_A  
+### Demo vedio:
+* 第二代車期末循跡測試：https://youtu.be/8me6_menD_A  
+* 第三代車期末循跡測試：https://youtu.be/yN2NaZWD63Y  
+* 第三代車藍芽遙控：https://youtu.be/2-j6yh7FEec  
 <img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image05.png" width="500">
+  
+### Final report pdf :  
+https://drive.google.com/open?id=0B7B__W5d9AJFSG5QaUNocXRLQUE  
+  
+### Team member:
+* shannon112, 謝孟儒, 程泓諭, 樊辰安, 蕭友榕  
+<img src="https://raw.githubusercontent.com/shannon112/arduino_BYNN/master/image04.jpg" width="500">
